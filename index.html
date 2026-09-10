@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Демо приложения: недельное кето-меню и список закупа с экономией">
+<meta name="theme-color" content="#171310">
+<meta property="og:title" content="Кето-меню на неделю">
+<meta property="og:description" content="Меню под вашу норму и список закупа, который дешевле обычного на треть">
+<meta property="og:type" content="website">
+<style>html,body{margin:0;padding:0;}img{max-width:100%;}[hidden]{display:none!important;}</style>
+<title>Прогон кето-меню</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ground:#171310; --panel:#221C18; --hair:#332A24;
+  --ink:#EDE5DA; --muted:#9B8E80; --accent:#D9703A; --green:#5FBF8B;
+  --paper:#FAF6EF; --card:#FFFFFF; --aink:#2E2820; --aink2:#6B6155;
+  --amuted:#9A9084; --aborder:#E7DFD2; --aaccent:#C25A2C; --atint:#F6E5DA;
+  --agreen:#2F7D57; --agreensoft:#E1F0E7; --adark:#2E2820; --awarm:#E0A268;
+  --disp:'Unbounded','Golos Text',system-ui,sans-serif;
+  --body:'Golos Text',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
+  align-items:center;overflow:hidden;
+}
+.chrome{transition:opacity .35s ease;}
+body.clean .chrome{opacity:0;pointer-events:none;}
+
+header{
+  width:100%;max-width:1000px;padding:22px 26px 0;display:flex;
+  align-items:center;gap:16px;flex-wrap:wrap;
+}
+.brand{display:flex;flex-direction:column;gap:3px;flex-grow:1;min-width:200px;}
+.brand b{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:-.01em;}
+.brand span{font-size:12.5px;color:var(--muted);}
+.tools{display:flex;gap:8px;}
+button{
+  font-family:var(--body);font-size:13px;font-weight:500;color:var(--ink);
+  background:var(--panel);border:1px solid var(--hair);border-radius:10px;
+  padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:border-color .15s ease,background .15s ease;
+}
+button:hover{border-color:#4A3E35;background:#2A231E;}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#1A120C;}
+
+.stage{flex-grow:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;}
+.scaler{transform-origin:center center;}
+.phone{
+  width:414px;height:868px;background:#0E0B09;border-radius:50px;padding:12px;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.85),0 0 0 1px #3A302A;
+}
+.viewport{
+  width:390px;height:844px;border-radius:39px;overflow:hidden;position:relative;
+  background:var(--paper);cursor:pointer;
+}
+.screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;background:var(--paper);
+  opacity:0;pointer-events:none;transform:translateX(14px);
+  transition:opacity .26s ease,transform .26s ease;
+}
+.screen.on{opacity:1;pointer-events:auto;transform:none;}
+
+footer{width:100%;max-width:1000px;padding:0 26px 24px;display:flex;flex-direction:column;gap:13px;align-items:center;}
+.caption{font-size:14.5px;color:var(--ink);text-align:center;min-height:21px;text-wrap:balance;}
+.caption em{font-style:normal;color:var(--accent);}
+.dots{display:flex;gap:7px;}
+.dot{width:26px;height:3px;border-radius:2px;background:#3A302A;transition:background .2s ease;}
+.dot.on{background:var(--accent);}
+.hint{font-size:11.5px;color:var(--muted);letter-spacing:.02em;}
+
+/* ---------- интерфейс приложения ---------- */
+.pad{padding:0 20px;}
+.col{display:flex;flex-direction:column;}
+.row{display:flex;align-items:center;}
+.grow{flex-grow:1;}
+.top{padding:58px 20px 14px;}
+.h1{font-family:var(--disp);font-weight:600;font-size:26px;line-height:1.15;letter-spacing:-.015em;color:var(--aink);}
+.sub{font-size:13.5px;color:var(--aink2);line-height:1.45;}
+.eyebrow{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--amuted);font-weight:500;}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--amuted);}
+.card{background:var(--card);border:1px solid var(--aborder);border-radius:18px;}
+.body-ink{color:var(--aink);}
+.num{font-variant-numeric:tabular-nums;}
+.disp{font-family:var(--disp);font-weight:600;letter-spacing:-.01em;}
+.scroll{flex-grow:1;overflow:hidden;}
+.btn{border-radius:14px;padding:16px;text-align:center;font-size:15px;font-weight:600;}
+.btn-dark{background:var(--adark);color:var(--paper);}
+.chip{font-size:12px;font-weight:600;padding:5px 11px;border-radius:9px;}
+.chip-a{color:var(--aaccent);background:var(--atint);}
+.chip-g{color:var(--agreen);background:var(--agreensoft);}
+.meal{display:flex;gap:10px;align-items:baseline;}
+.meal .kk{width:68px;flex-shrink:0;font-size:11px;color:var(--amuted);letter-spacing:.02em;}
+.meal .dish{flex-grow:1;font-size:13.5px;line-height:1.3;color:var(--aink);}
+.meal .kc{font-size:12px;color:var(--amuted);font-variant-numeric:tabular-nums;}
+.tabbar{border-top:1px solid var(--aborder);background:#FFFDFA;padding:12px 20px 26px;display:flex;gap:8px;}
+.tab{flex-grow:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10.5px;color:var(--amuted);}
+.tab.on{color:var(--aaccent);font-weight:600;}
+.seg{display:flex;background:#F0E8DB;border-radius:13px;padding:3px;gap:3px;}
+.seg div{flex-grow:1;text-align:center;padding:11px 6px;font-size:14px;color:var(--aink2);border-radius:10px;}
+.seg div.on{background:#fff;font-weight:600;color:var(--aink);box-shadow:0 1px 2px rgba(46,40,32,.06);}
+.opt{background:var(--card);border:1px solid var(--aborder);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:11px;font-size:14px;color:var(--aink);}
+.opt.on{border:1.5px solid var(--aaccent);}
+.radio{width:19px;height:19px;border-radius:10px;border:1.5px solid #CFC4B2;flex-shrink:0;}
+.radio.on{border:5px solid var(--aaccent);}
+.box{width:20px;height:20px;border-radius:6px;border:1.5px solid #CFC4B2;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.box.on{background:var(--agreen);border-color:var(--agreen);}
+.pill{border-radius:20px;padding:9px 15px;font-size:13.5px;border:1px solid var(--aborder);background:#fff;color:var(--aink2);}
+.pill.on{background:var(--aaccent);border-color:var(--aaccent);color:#fff;font-weight:600;}
+.shoprow{display:flex;align-items:center;gap:12px;}
+.shoprow .nm{flex-grow:1;font-size:14px;color:var(--aink);}
+.shoprow .qt{font-size:13px;color:var(--aink2);font-variant-numeric:tabular-nums;}
+.shoprow .pr{font-size:13px;font-weight:600;width:62px;text-align:right;font-variant-numeric:tabular-nums;color:var(--aink);}
+.cathead{display:flex;align-items:center;gap:8px;}
+.cathead span{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--aaccent);}
+.cathead i{flex-grow:1;height:1px;background:var(--aborder);}
+
+/* экран загрузки */
+.load{align-items:center;justify-content:center;gap:26px;}
+.spin{width:44px;height:44px;border-radius:22px;border:3px solid var(--aborder);border-top-color:var(--aaccent);animation:sp .9s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.steps{display:flex;flex-direction:column;gap:11px;width:230px;}
+.step{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--amuted);opacity:.35;transition:opacity .3s ease,color .3s ease;}
+.screen.on .step{animation:reveal .3s ease forwards;}
+.screen.on .step:nth-child(1){animation-delay:.15s;}
+.screen.on .step:nth-child(2){animation-delay:.75s;}
+.screen.on .step:nth-child(3){animation-delay:1.35s;}
+@keyframes reveal{to{opacity:1;color:var(--aink);}}
+
+/* пейволл */
+.dark-screen{background:var(--adark);}
+.dark-screen .h1,.dark-screen .body-ink{color:var(--paper);}
+
+
+/* ---------- карточка блюда и админка ---------- */
+.photo{position:relative;height:236px;flex-shrink:0;background:linear-gradient(160deg,#F3E7D6 0%,#EADBC6 100%);display:flex;align-items:center;justify-content:center;}
+.photo .tagline{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#A8977F;}
+.play{position:absolute;right:16px;bottom:16px;width:52px;height:52px;border-radius:26px;background:rgba(46,40,32,.82);display:flex;align-items:center;justify-content:center;}
+.backdot{position:absolute;left:16px;top:52px;width:38px;height:38px;border-radius:19px;background:rgba(255,253,250,.92);display:flex;align-items:center;justify-content:center;}
+.stepline{display:flex;gap:12px;align-items:flex-start;}
+.stepnum{width:24px;height:24px;border-radius:12px;background:var(--atint);color:var(--aaccent);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stepbody{flex-grow:1;display:flex;flex-direction:column;gap:3px;}
+.stepbody p{margin:0;font-size:13.5px;line-height:1.4;color:var(--aink);}
+.stepbody small{font-size:11.5px;color:var(--amuted);}
+.note{display:flex;gap:9px;align-items:flex-start;background:var(--atint);border-radius:12px;padding:11px 13px;}
+.note span{font-size:12.5px;color:#A44821;line-height:1.4;}
+
+.adminbar{display:inline-flex;align-items:center;gap:6px;background:var(--adark);color:var(--paper);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border-radius:8px;}
+.fill{display:flex;flex-direction:column;gap:6px;}
+.fillrow{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--aink2);}
+.fillrow b{width:74px;flex-shrink:0;font-weight:500;color:var(--aink);}
+.bar{flex-grow:1;height:6px;border-radius:3px;background:#EDE3D4;overflow:hidden;}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--aaccent);}
+.bar i.low{background:#D9A441;}
+.fillrow em{font-style:normal;width:42px;text-align:right;font-variant-numeric:tabular-nums;color:var(--amuted);}
+.thumb{width:52px;height:52px;border-radius:12px;background:linear-gradient(160deg,#F3E7D6,#E6D6BF);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.thumb.empty{background:#F4EEE3;border:1px dashed #D6C8B2;}
+.status{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:7px;}
+.status.pub{color:var(--agreen);background:var(--agreensoft);}
+.status.draft{color:#9A7B3E;background:#F6EDD8;}
+.tile{border-radius:14px;height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;color:var(--amuted);border:1px dashed #D6C8B2;background:#FFFDFA;}
+.tile.filled{border:none;background:linear-gradient(160deg,#F3E7D6,#E6D6BF);}
+.field{background:#fff;border:1px solid var(--aborder);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;}
+.field span{font-size:10.5px;color:var(--amuted);}
+.field b{font-size:14px;font-weight:500;color:var(--aink);}
+.field.ghost b{color:#BDB2A2;font-weight:400;}
+.ingrow{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--aborder);border-radius:11px;padding:9px 11px;}
+.ingrow .nm{flex-grow:1;font-size:13.5px;color:var(--aink);}
+.ingrow .gr{font-size:13px;font-weight:600;color:var(--aink);font-variant-numeric:tabular-nums;}
+.ingrow .x{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.addrow{border:1px dashed #D6C8B2;border-radius:11px;padding:10px;text-align:center;font-size:13px;color:var(--aaccent);font-weight:500;}
+.calcbox{background:var(--adark);border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:4px;}
+.calcbox b{font-family:var(--disp);font-weight:600;font-size:17px;color:var(--paper);font-variant-numeric:tabular-nums;}
+.calcbox span{font-size:11.5px;color:#A79B8C;}
+.stepedit{display:flex;gap:10px;align-items:flex-start;}
+.stepedit .box2{flex-grow:1;background:#fff;border:1px solid var(--aborder);border-radius:12px;padding:11px 12px;display:flex;flex-direction:column;gap:7px;}
+.stepedit .box2 p{margin:0;font-size:13.5px;line-height:1.4;color:var(--aink);}
+.stepmeta{display:flex;gap:7px;}
+.stepmeta div{font-size:11px;color:var(--aink2);background:var(--paper);border:1px solid var(--aborder);border-radius:7px;padding:4px 8px;display:flex;align-items:center;gap:4px;}
+.roleseg{display:flex;background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:3px;gap:3px;}
+.roleseg button{background:transparent;border:none;padding:6px 13px;border-radius:8px;font-size:13px;color:var(--muted);}
+.roleseg button[aria-pressed="true"]{background:var(--accent);color:#1A120C;font-weight:600;}
+.roleseg button:hover{background:#2A231E;color:var(--ink);}
+.roleseg button[aria-pressed="true"]:hover{background:var(--accent);color:#1A120C;}
+
+@media (prefers-reduced-motion:reduce){
+  .screen{transition:none;} .spin{animation:none;} .step{animation:none;opacity:1;color:var(--aink);}
+}
+</style>
+</head>
+<body>
+
+<header class="chrome">
+  <div class="brand">
+    <b>Прогон кето-меню</b>
+    <span>Кликните по экрану, чтобы листать. Клиент — 8 экранов, админ — 3.</span>
+  </div>
+  <div class="roleseg" role="group" aria-label="Роль">
+    <button id="rClient" aria-pressed="true">Клиент</button>
+    <button id="rAdmin" aria-pressed="false">Админ</button>
+  </div>
+  <div class="tools">
+    <button id="play" aria-pressed="false">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5l13 7.5-13 7.5z"/></svg>
+      <span id="playlbl">Автопоказ</span>
+    </button>
+    <button id="clean" aria-pressed="false">Чистый вид</button>
+    <button id="reset">Сначала</button>
+  </div>
+</header>
+
+<div class="stage">
+  <div class="scaler" id="scaler">
+    <div class="phone"><div class="viewport" id="viewport">
+
+      <!-- 1 · профиль -->
+      <section class="screen on" data-role="client" data-cap="Пять ответов — и норма посчитана. Или своя цифра от врача.">
+        <div class="top col" style="gap:18px;">
+          <div style="display:flex;gap:5px;">
+            <div style="flex-grow:1;height:3px;border-radius:2px;background:var(--aaccent);"></div>
+            <div style="flex-grow:1;height:3px;border-radius:2px;background:var(--aborder);"></div>
+            <div style="flex-grow:1;height:3px;border-radius:2px;background:var(--aborder);"></div>
+          </div>
+          <div class="col" style="gap:7px;">
+            <div class="h1">Расскажите о себе</div>
+            <div class="sub">Посчитаем норму. Если врач уже назвал вашу цифру — введите её вручную.</div>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:18px;padding-top:22px;">
+          <div class="seg"><div class="on">Женский</div><div>Мужской</div></div>
+          <div style="display:flex;gap:10px;">
+            <div class="card col" style="flex-grow:1;padding:12px 13px;gap:3px;"><span style="font-size:11px;color:var(--amuted);">Возраст</span><span class="num" style="font-size:19px;font-weight:600;color:var(--aink);">32</span></div>
+            <div class="card col" style="flex-grow:1;padding:12px 13px;gap:3px;"><span style="font-size:11px;color:var(--amuted);">Рост, см</span><span class="num" style="font-size:19px;font-weight:600;color:var(--aink);">165</span></div>
+            <div class="card col" style="flex-grow:1;padding:12px 13px;gap:3px;border:1.5px solid var(--aaccent);"><span style="font-size:11px;color:var(--aaccent);">Вес, кг</span><span class="num" style="font-size:19px;font-weight:600;color:var(--aink);">78</span></div>
+          </div>
+          <div class="col" style="gap:9px;">
+            <span class="lbl">Активность</span>
+            <div class="col" style="gap:7px;">
+              <div class="opt"><div class="radio"></div><span class="grow">Сидячая работа</span></div>
+              <div class="opt on"><div class="radio on"></div><div class="col grow" style="gap:1px;"><span style="font-weight:500;">Немного двигаюсь</span><span style="font-size:11.5px;color:var(--amuted);">прогулки, дом, 1–2 тренировки</span></div></div>
+              <div class="opt"><div class="radio"></div><span class="grow">Спорт 4–5 раз в неделю</span></div>
+            </div>
+          </div>
+          <div class="col" style="gap:9px;">
+            <span class="lbl">Цель</span>
+            <div style="display:flex;gap:7px;">
+              <div style="flex-grow:1;text-align:center;background:var(--adark);color:var(--paper);border-radius:11px;padding:11px 4px;font-size:13.5px;font-weight:600;">Похудеть</div>
+              <div style="flex-grow:1;text-align:center;" class="pill">Держать</div>
+              <div style="flex-grow:1;text-align:center;" class="pill">Набрать</div>
+            </div>
+          </div>
+        </div>
+        <div class="pad col" style="gap:12px;padding-bottom:26px;padding-top:16px;">
+          <div class="row" style="background:var(--atint);border-radius:15px;padding:14px 16px;gap:10px;">
+            <div class="col grow" style="gap:2px;"><span style="font-size:12px;color:#A44821;">Ваша норма</span><span style="font-size:12px;color:#B08A5E;">Миффлин-Сан Жеор, минус 18%</span></div>
+            <span class="disp num" style="font-size:21px;color:#A44821;">1 680</span>
+          </div>
+          <div class="btn btn-dark">Дальше</div>
+        </div>
+      </section>
+
+      <!-- 2 · исключения -->
+      <section class="screen" data-role="client" data-cap="Аллергии и нелюбимое исключаются раз и навсегда.">
+        <div class="top col" style="gap:18px;">
+          <div style="display:flex;gap:5px;">
+            <div style="flex-grow:1;height:3px;border-radius:2px;background:var(--aaccent);"></div>
+            <div style="flex-grow:1;height:3px;border-radius:2px;background:var(--aaccent);"></div>
+            <div style="flex-grow:1;height:3px;border-radius:2px;background:var(--aborder);"></div>
+          </div>
+          <div class="col" style="gap:7px;">
+            <div class="h1">Что убрать из меню</div>
+            <div class="sub">Эти продукты не попадут ни в одно блюдо и ни в один список покупок.</div>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:22px;padding-top:22px;">
+          <div class="card row" style="padding:12px 14px;gap:10px;border-radius:13px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A9084" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+            <span style="font-size:14px;color:var(--amuted);">Найти продукт</span>
+          </div>
+          <div class="col" style="gap:11px;">
+            <span class="lbl">Аллергия</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <div class="pill">Молочное</div><div class="pill on">Орехи</div><div class="pill">Яйца</div>
+              <div class="pill on">Рыба</div><div class="pill">Глютен</div><div class="pill">Соя</div>
+            </div>
+          </div>
+          <div class="col" style="gap:11px;">
+            <span class="lbl">Просто не люблю</span>
+            <div class="col" style="gap:7px;">
+              <div class="opt"><span class="grow">Печень говяжья</span><div class="box" style="background:var(--adark);border-color:var(--adark);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FAF6EF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div></div>
+              <div class="opt"><span class="grow">Брокколи</span><div class="box"></div></div>
+              <div class="opt"><span class="grow">Қазы</span><div class="box"></div></div>
+              <div class="opt"><span class="grow">Ферменттелген қырыққабат</span><div class="box"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pad col" style="gap:11px;padding-bottom:26px;padding-top:16px;">
+          <div class="row" style="gap:9px;padding:0 2px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B08A5E" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.2v.1"/></svg>
+            <span style="font-size:12.5px;color:#B08A5E;line-height:1.35;">С этими ограничениями доступно 18 блюд из 30</span>
+          </div>
+          <div class="btn btn-dark">Собрать меню</div>
+        </div>
+      </section>
+
+      <!-- 3 · сборка -->
+      <section class="screen load" data-role="client" data-cap="Меню собирается под норму и под кошелёк." data-auto="2400">
+        <div class="spin"></div>
+        <div class="col" style="gap:6px;align-items:center;">
+          <div class="disp" style="font-size:19px;color:var(--aink);">Собираем меню</div>
+          <div style="font-size:13px;color:var(--amuted);">неделя, 28 приёмов пищи</div>
+        </div>
+        <div class="steps">
+          <div class="step"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Считаем норму</div>
+          <div class="step"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Подбираем блюда</div>
+          <div class="step"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Удешевляем закуп</div>
+        </div>
+      </section>
+
+      <!-- 4 · меню -->
+      <section class="screen" data-role="client" data-cap="Неделя целиком. Сразу видно, в какие дни готовить.">
+        <div class="top row" style="align-items:flex-end;gap:12px;">
+          <div class="col grow" style="gap:2px;">
+            <div class="eyebrow">11 — 17 мая</div>
+            <div class="disp" style="font-size:28px;line-height:1.1;color:var(--aink);">Меню</div>
+          </div>
+          <div class="card" style="width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6155" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4S18.3 16.4 19.5 20"/></svg>
+          </div>
+        </div>
+        <div class="pad" style="padding-bottom:14px;">
+          <div class="card col" style="padding:16px 16px 14px;gap:14px;border-radius:20px;">
+            <div class="row" style="gap:10px;">
+              <div class="disp num" style="font-size:21px;color:var(--aink);">1 500</div>
+              <div class="grow" style="font-size:13px;color:var(--aink2);">ккал в день</div>
+              <div class="chip chip-a">Кето</div>
+            </div>
+            <div class="col" style="gap:7px;">
+              <div style="display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px;">
+                <div style="width:25%;background:var(--aaccent);"></div>
+                <div style="width:70%;background:var(--awarm);"></div>
+                <div style="width:5%;background:#CFC4B2;"></div>
+              </div>
+              <div style="display:flex;gap:14px;font-size:11.5px;color:var(--aink2);"><span>Белки 25%</span><span>Жиры 70%</span><span>Углеводы 5%</span></div>
+            </div>
+            <div style="height:1px;background:#EFE7DA;"></div>
+            <div class="row" style="gap:10px;">
+              <div class="grow" style="font-size:13px;color:var(--aink2);">Закуп на неделю</div>
+              <div class="num" style="font-size:14px;font-weight:600;color:var(--aink);">26 794 ₸</div>
+              <div class="chip chip-g num">−14 072 ₸</div>
+            </div>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:11px;">
+          <div class="card col" style="padding:14px 16px 15px;gap:11px;">
+            <div class="row" style="gap:8px;">
+              <div style="font-size:14px;font-weight:600;color:var(--aink);">Вс</div>
+              <div class="grow" style="font-size:13px;color:var(--amuted);">11 мая</div>
+              <div class="row" style="gap:5px;background:var(--atint);padding:4px 9px;border-radius:8px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C25A2C" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3c2.5 3 4 5 4 7a4 4 0 0 1-8 0c0-2 1.5-4 4-7z"/></svg>
+                <span style="font-size:11.5px;font-weight:600;color:var(--aaccent);">готовка</span>
+              </div>
+              <div class="num" style="font-size:13px;font-weight:600;color:var(--aink);">1509</div>
+            </div>
+            <div class="col" style="gap:9px;">
+              <div class="meal"><span class="kk">Таңғы ас</span><span class="dish">Яичница с авокадо и рукколой</span><span class="kc">384</span></div>
+              <div class="meal"><span class="kk">Түскі ас</span><span class="dish">Баранина с капустой</span><span class="kc">525</span></div>
+              <div class="meal"><span class="kk">Кешкі ас</span><span class="dish">Грудка со шпинатом в сливках</span><span class="kc">420</span></div>
+              <div class="meal"><span class="kk">Перекус</span><span class="dish">Сыр с миндалём</span><span class="kc">180</span></div>
+            </div>
+          </div>
+          <div class="card col" style="padding:14px 16px 15px;gap:11px;">
+            <div class="row" style="gap:8px;">
+              <div style="font-size:14px;font-weight:600;color:var(--aink);">Пн</div>
+              <div class="grow" style="font-size:13px;color:var(--amuted);">12 мая</div>
+              <div class="num" style="font-size:13px;font-weight:600;color:var(--aink);">1456</div>
+            </div>
+            <div class="col" style="gap:9px;">
+              <div class="meal"><span class="kk">Таңғы ас</span><span class="dish">Омлет с қаймақ и шпинатом</span><span class="kc">361</span></div>
+              <div class="meal"><span class="kk">Түскі ас</span><span class="dish">Баранина с капустой</span><span class="kc">525</span></div>
+              <div class="meal"><span class="kk">Кешкі ас</span><span class="dish">Суп на сүйек сорпасы с яйцом</span><span class="kc">389</span></div>
+              <div class="meal"><span class="kk">Перекус</span><span class="dish">Тыквенные семечки</span><span class="kc">180</span></div>
+            </div>
+          </div>
+          <div class="card col" style="padding:14px 16px 15px;gap:11px;">
+            <div class="row" style="gap:8px;">
+              <div style="font-size:14px;font-weight:600;color:var(--aink);">Вт</div>
+              <div class="grow" style="font-size:13px;color:var(--amuted);">13 мая</div>
+              <div class="num" style="font-size:13px;font-weight:600;color:var(--aink);">1509</div>
+            </div>
+            <div class="col" style="gap:9px;">
+              <div class="meal"><span class="kk">Таңғы ас</span><span class="dish">Яичница с авокадо и рукколой</span><span class="kc">384</span></div>
+              <div class="meal"><span class="kk">Түскі ас</span><span class="dish">Куриный салат с авокадо</span><span class="kc">525</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab on"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Меню</div>
+          <div class="tab"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h2.2l2.3 10.5h9.8L19 8H6.2"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>Закуп</div>
+          <div class="tab"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><path d="M19 11h1.5a1.5 1.5 0 0 1 0 3H19"/><path d="M9 6.5c0-1 1-1.5 1-2.5M13 6.5c0-1 1-1.5 1-2.5"/></svg>Готовка</div>
+          <div class="tab"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4S18.3 16.4 19.5 20"/></svg>Профиль</div>
+        </div>
+      </section>
+
+      <!-- 5 · день -->
+      <section class="screen" data-role="client" data-cap="В каждом блюде — состав в граммах. Не надо ничего взвешивать на глаз.">
+        <div class="top row" style="gap:12px;">
+          <div class="card" style="width:38px;height:38px;border-radius:19px;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E2820" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5L8 12l6.5 7"/></svg>
+          </div>
+          <div class="col grow" style="gap:1px;">
+            <span style="font-size:16px;font-weight:600;color:var(--aink);">Воскресенье</span>
+            <span style="font-size:12.5px;color:var(--amuted);">11 мая · день 1</span>
+          </div>
+        </div>
+        <div class="pad" style="padding-bottom:16px;">
+          <div class="card col" style="padding:16px;gap:13px;border-radius:20px;">
+            <div class="row" style="align-items:baseline;gap:8px;">
+              <span class="disp num" style="font-size:24px;color:var(--aink);">1 509</span>
+              <span class="grow" style="font-size:13px;color:var(--aink2);">ккал из 1 500</span>
+              <span class="chip chip-g">в норме</span>
+            </div>
+            <div style="display:flex;gap:9px;">
+              <div class="col grow" style="gap:5px;"><div style="height:5px;border-radius:3px;background:var(--aaccent);"></div><span style="font-size:11.5px;color:var(--aink2);">Белки 93 г</span></div>
+              <div class="col grow" style="gap:5px;"><div style="height:5px;border-radius:3px;background:var(--awarm);"></div><span style="font-size:11.5px;color:var(--aink2);">Жиры 114 г</span></div>
+              <div class="col grow" style="gap:5px;"><div style="height:5px;border-radius:3px;background:#CFC4B2;"></div><span style="font-size:11.5px;color:var(--aink2);">Углеводы 21 г</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:10px;">
+          <div class="card col" style="padding:15px 16px;gap:13px;border:1.5px solid var(--aaccent);">
+            <div class="row" style="align-items:baseline;gap:9px;">
+              <span style="font-size:11px;color:var(--aaccent);font-weight:600;letter-spacing:.04em;">Таңғы ас</span>
+              <span class="grow"></span>
+              <span class="num" style="font-size:12px;color:var(--amuted);">384 ккал</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;line-height:1.25;color:var(--aink);">Яичница с авокадо и рукколой</div>
+            <div class="col" style="gap:7px;">
+              <div class="row" style="gap:10px;font-size:13px;"><span class="grow" style="color:var(--aink2);">Яйцо куриное</span><span class="num" style="color:var(--aink);">2 шт</span></div>
+              <div class="row" style="gap:10px;font-size:13px;"><span class="grow" style="color:var(--aink2);">Авокадо</span><span class="num" style="color:var(--aink);">76 г</span></div>
+              <div class="row" style="gap:10px;font-size:13px;"><span class="grow" style="color:var(--aink2);">Руккола</span><span class="num" style="color:var(--aink);">24 г</span></div>
+              <div class="row" style="gap:10px;font-size:13px;"><span class="grow" style="color:var(--aink2);">Оливковое масло</span><span class="num" style="color:var(--aink);">10 г</span></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <div style="flex-grow:1;text-align:center;background:var(--paper);border:1px solid var(--aborder);border-radius:11px;padding:10px;font-size:13px;font-weight:500;color:var(--aink);">Заменить</div>
+              <div style="flex-grow:1;text-align:center;background:var(--paper);border:1px solid var(--aborder);border-radius:11px;padding:10px;font-size:13px;font-weight:500;color:var(--aink);">Готовить</div>
+            </div>
+          </div>
+          <div class="card row" style="padding:14px 16px;gap:12px;">
+            <div class="col grow" style="gap:3px;"><span style="font-size:11px;color:var(--amuted);letter-spacing:.04em;">Түскі ас</span><span style="font-size:14.5px;font-weight:500;color:var(--aink);">Баранина с капустой</span></div>
+            <span class="num" style="font-size:12px;color:var(--amuted);">525</span>
+          </div>
+          <div class="card row" style="padding:14px 16px;gap:12px;">
+            <div class="col grow" style="gap:3px;"><span style="font-size:11px;color:var(--amuted);letter-spacing:.04em;">Кешкі ас</span><span style="font-size:14.5px;font-weight:500;color:var(--aink);">Грудка со шпинатом в сливках</span></div>
+            <span class="num" style="font-size:12px;color:var(--amuted);">420</span>
+          </div>
+          <div class="card row" style="padding:14px 16px;gap:12px;">
+            <div class="col grow" style="gap:3px;"><span style="font-size:11px;color:var(--amuted);letter-spacing:.04em;">Перекус</span><span style="font-size:14.5px;font-weight:500;color:var(--aink);">Сыр с миндалём</span></div>
+            <span class="num" style="font-size:12px;color:var(--amuted);">180</span>
+          </div>
+        </div>
+        <div class="pad" style="padding-top:14px;padding-bottom:26px;"><div class="btn btn-dark">Пересобрать день</div></div>
+      </section>
+
+
+      <!-- 6 · блюдо -->
+      <section class="screen" data-role="client" data-cap="Карточка блюда: фото, видео и шаги. Готовит кто угодно, не только автор." data-auto="7000">
+        <div class="photo">
+          <svg width="152" height="152" viewBox="0 0 150 150" aria-hidden="true">
+          <circle cx="75" cy="75" r="62" fill="#FFFDF8" stroke="#E4D5BE" stroke-width="1.5"/>
+          <circle cx="75" cy="75" r="50" fill="none" stroke="#F0E4D0" stroke-width="1"/>
+          <path d="M55 62c12-9 26-6 30 4 4 9-2 19-12 22-11 3-24-2-26-11-1-6 2-11 8-15z" fill="#FFFFFF" stroke="#EFE3CF" stroke-width="1.2"/>
+          <circle cx="66" cy="74" r="9" fill="#E8B34A"/>
+          <ellipse cx="97" cy="66" rx="14" ry="7" transform="rotate(-22 97 66)" fill="#A8C27E"/>
+          <ellipse cx="101" cy="77" rx="14" ry="7" transform="rotate(-22 101 77)" fill="#96B26D"/>
+          <ellipse cx="105" cy="88" rx="14" ry="7" transform="rotate(-22 105 88)" fill="#87A45F"/>
+          <path d="M60 100c8-4 16-3 21 2-7 4-16 4-21-2z" fill="#6E9450"/>
+          <path d="M78 104c7-5 15-5 21-1-6 5-15 6-21 1z" fill="#7BA25B"/>
+        </svg>
+          <div class="backdot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2E2820" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5L8 12l6.5 7"/></svg></div>
+          <div class="play"><svg width="17" height="17" viewBox="0 0 24 24" fill="#FAF6EF" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg></div>
+          <div class="tagline">фото и видео от Перизат</div>
+        </div>
+        <div class="scroll pad col" style="gap:18px;padding-top:18px;">
+          <div class="col" style="gap:7px;">
+            <div class="row" style="gap:8px;">
+              <span class="eyebrow" style="color:var(--aaccent);">Таңғы ас</span>
+              <span class="grow"></span>
+              <span class="eyebrow">12 мин</span>
+            </div>
+            <div style="font-family:var(--disp);font-weight:600;font-size:21px;line-height:1.2;letter-spacing:-.015em;color:var(--aink);">Яичница с авокадо и рукколой</div>
+            <div class="row" style="gap:12px;padding-top:2px;">
+              <span class="num" style="font-size:14px;font-weight:600;color:var(--aink);">384 ккал</span>
+              <span class="num" style="font-size:12.5px;color:var(--aink2);">Б 14 · Ж 34 · У 4</span>
+            </div>
+          </div>
+
+          <div class="col" style="gap:9px;">
+            <span class="lbl">Состав на порцию</span>
+            <div class="col" style="gap:7px;">
+              <div class="row" style="gap:10px;font-size:13.5px;"><span class="grow" style="color:var(--aink2);">Яйцо куриное</span><span class="num" style="color:var(--aink);font-weight:500;">2 шт</span></div>
+              <div class="row" style="gap:10px;font-size:13.5px;"><span class="grow" style="color:var(--aink2);">Авокадо</span><span class="num" style="color:var(--aink);font-weight:500;">76 г</span></div>
+              <div class="row" style="gap:10px;font-size:13.5px;"><span class="grow" style="color:var(--aink2);">Руккола</span><span class="num" style="color:var(--aink);font-weight:500;">24 г</span></div>
+              <div class="row" style="gap:10px;font-size:13.5px;"><span class="grow" style="color:var(--aink2);">Оливковое масло</span><span class="num" style="color:var(--aink);font-weight:500;">10 г</span></div>
+            </div>
+          </div>
+
+          <div class="col" style="gap:12px;">
+            <span class="lbl">Приготовление</span>
+            <div class="stepline"><div class="stepnum">1</div><div class="stepbody"><p>Разогреть сковороду с оливковым маслом на среднем огне.</p><small>1 мин</small></div></div>
+            <div class="stepline"><div class="stepnum">2</div><div class="stepbody"><p>Разбить два яйца, накрыть крышкой. Белок должен схватиться, желток остаться жидким.</p><small>4 мин · есть видео</small></div></div>
+            <div class="stepline"><div class="stepnum">3</div><div class="stepbody"><p>Авокадо разрезать вдоль, нарезать ломтиками, выложить рядом.</p><small>2 мин</small></div></div>
+            <div class="stepline"><div class="stepnum">4</div><div class="stepbody"><p>Добавить рукколу, посолить, полить оставшимся маслом.</p><small>1 мин</small></div></div>
+          </div>
+
+          <div class="note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C25A2C" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.2v.1"/></svg>
+            <span>Только в день еды — заранее не готовится. Авокадо резать перед подачей.</span>
+          </div>
+        </div>
+        <div class="pad" style="padding-top:14px;padding-bottom:26px;"><div class="btn btn-dark">Приготовила</div></div>
+      </section>
+
+      <!-- 7 · закуп -->
+      <section class="screen" data-role="client" data-cap="Вот здесь продаётся всё: <em>−14 072 ₸ за неделю</em>." data-auto="6500">
+        <div class="top col" style="gap:12px;">
+          <div class="disp" style="font-size:26px;color:var(--aink);">Закуп</div>
+          <div class="seg"><div class="on" style="font-size:12.5px;">Вс · дни 1–3</div><div style="font-size:12.5px;">Ср · дни 4–7</div></div>
+        </div>
+        <div class="pad" style="padding-bottom:14px;padding-top:4px;">
+          <div class="col" style="background:var(--agreen);border-radius:18px;padding:15px 16px;gap:6px;">
+            <div class="row" style="align-items:baseline;gap:8px;">
+              <div class="disp num" style="font-weight:700;font-size:24px;color:#fff;">−14 072 ₸</div>
+              <div style="font-size:13px;color:#BFE0CD;">за неделю</div>
+            </div>
+            <div style="font-size:12.5px;color:#D5EADE;line-height:1.4;">Дешевле обычного плана на 34%. Упаковки подобраны так, чтобы продукты расходились между блюдами, а не портились в холодильнике.</div>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:16px;">
+          <div class="col" style="gap:9px;">
+            <div class="cathead"><span>Мясо и птица</span><i></i></div>
+            <div class="shoprow"><div class="box"></div><span class="nm">Баранина</span><span class="qt">500 г</span><span class="pr">2 100 ₸</span></div>
+            <div class="shoprow"><div class="box on"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div><span class="nm" style="color:var(--amuted);text-decoration:line-through;">Куриная грудка</span><span class="qt" style="color:var(--amuted);">500 г</span><span class="pr" style="color:var(--amuted);">1 300 ₸</span></div>
+          </div>
+          <div class="col" style="gap:9px;">
+            <div class="cathead"><span>Молочное</span><i></i></div>
+            <div class="shoprow"><div class="box"></div><div class="col grow" style="gap:1px;"><span style="font-size:14px;color:var(--aink);">Сливки 33%</span><span style="font-size:11px;color:#B08A5E;">останется 108 г</span></div><span class="qt">200 г</span><span class="pr">720 ₸</span></div>
+            <div class="shoprow"><div class="box"></div><div class="col grow" style="gap:1px;"><span style="font-size:14px;color:var(--aink);">Қаймақ</span><span style="font-size:11px;color:#B08A5E;">останется 141 г</span></div><span class="qt">200 г</span><span class="pr">640 ₸</span></div>
+            <div class="shoprow"><div class="box"></div><span class="nm">Сыр гауда</span><span class="qt">200 г</span><span class="pr">1 040 ₸</span></div>
+          </div>
+          <div class="col" style="gap:9px;">
+            <div class="cathead"><span>Овощи и зелень</span><i></i></div>
+            <div class="shoprow"><div class="box"></div><span class="nm">Авокадо</span><span class="qt">2 шт</span><span class="pr">1 200 ₸</span></div>
+            <div class="shoprow"><div class="box"></div><span class="nm">Шпинат</span><span class="qt">300 г</span><span class="pr">540 ₸</span></div>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--aborder);background:#FFFDFA;padding:14px 20px 26px;display:flex;flex-direction:column;gap:11px;">
+          <div class="row" style="align-items:baseline;gap:10px;">
+            <span class="grow" style="font-size:13px;color:var(--aink2);">Итого · 19 позиций</span>
+            <span class="disp num" style="font-size:19px;color:var(--aink);">12 888 ₸</span>
+          </div>
+          <div class="btn btn-dark">Отправить список в Kaspi</div>
+        </div>
+      </section>
+
+      <!-- 8 · подписка -->
+      <section class="screen dark-screen" data-role="client" data-cap="Подписка стоит меньше, чем экономит за одну неделю." data-auto="7000">
+        <div style="padding:56px 20px 0;display:flex;justify-content:flex-end;">
+          <div style="width:34px;height:34px;border-radius:17px;border:1px solid #4A4238;display:flex;align-items:center;justify-content:center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B3A899" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </div>
+        </div>
+        <div class="pad col" style="gap:16px;padding-top:20px;">
+          <div class="disp" style="font-size:29px;line-height:1.18;letter-spacing:-.02em;color:var(--paper);">Окупается<br>с первого закупа</div>
+          <div class="row" style="align-items:baseline;gap:10px;">
+            <span class="disp num" style="font-weight:700;font-size:34px;color:#7FC49E;letter-spacing:-.02em;">−14 072 ₸</span>
+            <span style="font-size:14px;color:#B3A899;">в неделю</span>
+          </div>
+          <div style="font-size:14px;color:#B3A899;line-height:1.5;">Столько сэкономил план этой недели против обычного набора продуктов на те же 1 500 ккал.</div>
+        </div>
+        <div class="scroll pad col" style="gap:15px;padding-top:26px;">
+          <div class="row" style="gap:12px;align-items:flex-start;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#E0A268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+            <span style="font-size:14.5px;line-height:1.45;color:var(--paper);">Новое меню и список закупа каждую неделю, под вашу норму</span>
+          </div>
+          <div class="row" style="gap:12px;align-items:flex-start;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#E0A268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+            <span style="font-size:14.5px;line-height:1.45;color:var(--paper);">Казахстанские продукты и цены — қаймақ, сүйек сорпасы, құрт, қазы</span>
+          </div>
+          <div class="row" style="gap:12px;align-items:flex-start;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#E0A268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+            <span style="font-size:14.5px;line-height:1.45;color:var(--paper);">Порядок готовки: две сессии в неделю вместо ежедневной плиты</span>
+          </div>
+        </div>
+        <div class="pad col" style="gap:9px;">
+          <div class="row" style="border:1.5px solid var(--aaccent);background:#3A322A;border-radius:16px;padding:15px 16px;gap:12px;">
+            <div class="radio on" style="border-color:var(--aaccent);"></div>
+            <div class="col grow" style="gap:2px;"><span style="font-size:15px;font-weight:600;color:var(--paper);">Год</span><span style="font-size:12.5px;color:#B3A899;">2 492 ₸ в месяц</span></div>
+            <div class="col" style="align-items:flex-end;gap:3px;"><span class="num" style="font-size:16px;font-weight:600;color:var(--paper);">29 900 ₸</span><span style="font-size:11px;font-weight:600;color:#7FC49E;background:#2A4A38;padding:3px 7px;border-radius:6px;">−36%</span></div>
+          </div>
+          <div class="row" style="border:1px solid #4A4238;border-radius:16px;padding:15px 16px;gap:12px;">
+            <div class="radio" style="border-color:#6B6155;"></div>
+            <span class="grow" style="font-size:15px;color:var(--paper);">Месяц</span>
+            <span class="num" style="font-size:16px;font-weight:600;color:var(--paper);">3 900 ₸</span>
+          </div>
+        </div>
+        <div class="pad col" style="gap:11px;padding-top:16px;padding-bottom:26px;">
+          <div class="btn" style="background:var(--paper);color:var(--adark);">Оплатить через Kaspi</div>
+          <div style="text-align:center;font-size:12px;color:#8A8073;line-height:1.4;">Первое меню бесплатно. Отменить можно в любой момент.</div>
+        </div>
+      </section>
+
+
+      <!-- А1 · каталог -->
+      <section class="screen" data-role="admin" data-cap="Админ сразу видит, каких блюд каталогу не хватает.">
+        <div class="top col" style="gap:14px;">
+          <div class="row" style="gap:10px;">
+            <div class="disp grow" style="font-size:26px;color:var(--aink);">Блюда</div>
+            <span class="adminbar">админ</span>
+          </div>
+          <div class="fill">
+            <div class="fillrow"><b>Завтраки</b><div class="bar"><i style="width:60%"></i></div><em>12/20</em></div>
+            <div class="fillrow"><b>Первое</b><div class="bar"><i style="width:50%"></i></div><em>7/14</em></div>
+            <div class="fillrow"><b>Второе</b><div class="bar"><i style="width:70%"></i></div><em>14/20</em></div>
+            <div class="fillrow"><b>Салаты</b><div class="bar"><i class="low" style="width:20%"></i></div><em>4/20</em></div>
+            <div class="fillrow"><b>Перекусы</b><div class="bar"><i class="low" style="width:25%"></i></div><em>5/20</em></div>
+          </div>
+        </div>
+        <div class="pad" style="padding-bottom:12px;">
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <div class="pill on" style="padding:7px 13px;font-size:12.5px;">Все 42</div>
+            <div class="pill" style="padding:7px 13px;font-size:12.5px;">Черновики 6</div>
+            <div class="pill" style="padding:7px 13px;font-size:12.5px;">Без фото 3</div>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:9px;">
+          <div class="card row" style="padding:11px 13px;gap:12px;border-radius:14px;">
+            <div class="thumb"><svg width="26" height="26" viewBox="0 0 150 150" aria-hidden="true">
+            <circle cx="75" cy="75" r="62" fill="#FFFDF8" stroke="#E4D5BE" stroke-width="3"/>
+            <circle cx="70" cy="72" r="24" fill="#FFFFFF"/><circle cx="70" cy="72" r="11" fill="#E8B34A"/>
+            <ellipse cx="102" cy="80" rx="16" ry="8" transform="rotate(-22 102 80)" fill="#96B26D"/>
+          </svg></div>
+            <div class="col grow" style="gap:3px;">
+              <span style="font-size:14px;font-weight:500;color:var(--aink);">Яичница с авокадо</span>
+              <span style="font-size:11.5px;color:var(--amuted);">Завтрак · кето · 384 ккал</span>
+            </div>
+            <span class="status pub">в меню</span>
+          </div>
+          <div class="card row" style="padding:11px 13px;gap:12px;border-radius:14px;">
+            <div class="thumb"><svg width="26" height="26" viewBox="0 0 150 150" aria-hidden="true">
+            <circle cx="75" cy="75" r="62" fill="#FFFDF8" stroke="#E4D5BE" stroke-width="3"/>
+            <circle cx="70" cy="72" r="24" fill="#FFFFFF"/><circle cx="70" cy="72" r="11" fill="#E8B34A"/>
+            <ellipse cx="102" cy="80" rx="16" ry="8" transform="rotate(-22 102 80)" fill="#96B26D"/>
+          </svg></div>
+            <div class="col grow" style="gap:3px;">
+              <span style="font-size:14px;font-weight:500;color:var(--aink);">Баранина с капустой</span>
+              <span style="font-size:11.5px;color:var(--amuted);">Второе · кето · 525 ккал</span>
+            </div>
+            <span class="status pub">в меню</span>
+          </div>
+          <div class="card row" style="padding:11px 13px;gap:12px;border-radius:14px;">
+            <div class="thumb empty"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0B29C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M3.5 17l5-5 4 4 3-2.5 5 4.5"/></svg></div>
+            <div class="col grow" style="gap:3px;">
+              <span style="font-size:14px;font-weight:500;color:var(--aink);">Салат из огурцов с қаймақ</span>
+              <span style="font-size:11.5px;color:var(--amuted);">Салат · нет фото и шагов</span>
+            </div>
+            <span class="status draft">черновик</span>
+          </div>
+          <div class="card row" style="padding:11px 13px;gap:12px;border-radius:14px;">
+            <div class="thumb"><svg width="26" height="26" viewBox="0 0 150 150" aria-hidden="true">
+            <circle cx="75" cy="75" r="62" fill="#FFFDF8" stroke="#E4D5BE" stroke-width="3"/>
+            <circle cx="70" cy="72" r="24" fill="#FFFFFF"/><circle cx="70" cy="72" r="11" fill="#E8B34A"/>
+            <ellipse cx="102" cy="80" rx="16" ry="8" transform="rotate(-22 102 80)" fill="#96B26D"/>
+          </svg></div>
+            <div class="col grow" style="gap:3px;">
+              <span style="font-size:14px;font-weight:500;color:var(--aink);">Суп на сүйек сорпасы</span>
+              <span style="font-size:11.5px;color:var(--amuted);">Первое · кето · 389 ккал</span>
+            </div>
+            <span class="status pub">в меню</span>
+          </div>
+        </div>
+        <div class="pad" style="padding-top:14px;padding-bottom:26px;"><div class="btn btn-dark">Добавить блюдо</div></div>
+      </section>
+
+      <!-- А2 · новое блюдо -->
+      <section class="screen" data-role="admin" data-cap="Фото, видео, состав в граммах. <em>Калории считает приложение</em>, не повар." data-auto="7000">
+        <div class="top row" style="gap:12px;">
+          <div class="card" style="width:38px;height:38px;border-radius:19px;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E2820" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5L8 12l6.5 7"/></svg>
+          </div>
+          <div class="col grow" style="gap:1px;">
+            <span style="font-size:16px;font-weight:600;color:var(--aink);">Новое блюдо</span>
+            <span style="font-size:12.5px;color:var(--amuted);">черновик · сохраняется сам</span>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:16px;">
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+            <div class="tile filled" style="position:relative;">
+              <svg width="30" height="30" viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="62" fill="#FFFDF8" stroke="#E4D5BE" stroke-width="3"/><circle cx="70" cy="72" r="24" fill="#FFFFFF"/><circle cx="70" cy="72" r="11" fill="#E8B34A"/><ellipse cx="102" cy="80" rx="16" ry="8" transform="rotate(-22 102 80)" fill="#96B26D"/></svg>
+            </div>
+            <div class="tile">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B5A68F" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>
+              фото
+            </div>
+            <div class="tile">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B5A68F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="2.5"/><path d="M15 11l6-3.5v9L15 13z"/></svg>
+              видео
+            </div>
+          </div>
+
+          <div class="col" style="gap:8px;">
+            <div class="field"><span>Название</span><b>Яичница с авокадо и рукколой</b></div>
+            <div class="field ghost"><span>Атауы қазақша</span><b>не заполнено</b></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="field"><span>Категория</span><b>Завтрак</b></div>
+              <div class="field"><span>Диета</span><b>Кето</b></div>
+              <div class="field"><span>Порций</span><b>1</b></div>
+              <div class="field"><span>Время, мин</span><b>12</b></div>
+              <div class="field"><span>Выход готового</span><b>210 г</b></div>
+              <div class="field"><span>Хранение</span><b>0 дней</b></div>
+            </div>
+          </div>
+
+          <div class="col" style="gap:8px;">
+            <span class="lbl">Состав, сырой вес</span>
+            <div class="ingrow"><span class="nm">Яйцо куриное</span><span class="gr">2 шт</span><span class="x"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C0B29C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span></div>
+            <div class="ingrow"><span class="nm">Авокадо</span><span class="gr">80 г</span><span class="x"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C0B29C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span></div>
+            <div class="ingrow"><span class="nm">Руккола</span><span class="gr">25 г</span><span class="x"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C0B29C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span></div>
+            <div class="ingrow"><span class="nm">Оливковое масло</span><span class="gr">10 г</span><span class="x"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C0B29C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span></div>
+            <div class="addrow">+ ингредиент</div>
+          </div>
+
+          <div class="calcbox">
+            <b>384 ккал · Б 14 · Ж 34 · У 4</b>
+            <span>Посчитано из состава по базе продуктов — вручную считать не нужно</span>
+          </div>
+        </div>
+        <div class="pad" style="padding-top:14px;padding-bottom:26px;"><div class="btn btn-dark">Дальше — приготовление</div></div>
+      </section>
+
+      <!-- А3 · шаги -->
+      <section class="screen" data-role="admin" data-cap="Шаги можно снять на видео прямо во время готовки." data-auto="6500">
+        <div class="top row" style="gap:12px;">
+          <div class="card" style="width:38px;height:38px;border-radius:19px;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E2820" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5L8 12l6.5 7"/></svg>
+          </div>
+          <div class="col grow" style="gap:1px;">
+            <span style="font-size:16px;font-weight:600;color:var(--aink);">Приготовление</span>
+            <span style="font-size:12.5px;color:var(--amuted);">Яичница с авокадо и рукколой</span>
+          </div>
+        </div>
+        <div class="scroll pad col" style="gap:11px;">
+          <div class="stepedit">
+            <div class="stepnum">1</div>
+            <div class="box2">
+              <p>Разогреть сковороду с оливковым маслом на среднем огне.</p>
+              <div class="stepmeta"><div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>1 мин</div></div>
+            </div>
+          </div>
+          <div class="stepedit">
+            <div class="stepnum">2</div>
+            <div class="box2">
+              <p>Разбить два яйца, накрыть крышкой. Белок должен схватиться, желток остаться жидким.</p>
+              <div class="stepmeta">
+                <div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>4 мин</div>
+                <div style="color:var(--aaccent);border-color:#EBD5C4;background:var(--atint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="2.5"/><path d="M15 11l6-3.5v9L15 13z"/></svg>видео 0:18</div>
+              </div>
+            </div>
+          </div>
+          <div class="stepedit">
+            <div class="stepnum">3</div>
+            <div class="box2">
+              <p>Авокадо разрезать вдоль, нарезать ломтиками, выложить рядом.</p>
+              <div class="stepmeta"><div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>2 мин</div></div>
+            </div>
+          </div>
+          <div class="stepedit">
+            <div class="stepnum">4</div>
+            <div class="box2">
+              <p>Добавить рукколу, посолить, полить оставшимся маслом.</p>
+              <div class="stepmeta"><div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>1 мин</div></div>
+            </div>
+          </div>
+          <div class="addrow">+ шаг</div>
+        </div>
+        <div class="pad col" style="gap:10px;padding-top:14px;padding-bottom:26px;">
+          <div class="row" style="gap:9px;padding:0 2px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--agreen)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+            <span style="font-size:12.5px;color:var(--aink2);">Всё заполнено — блюдо попадёт в подбор меню</span>
+          </div>
+          <div class="btn btn-dark">Опубликовать блюдо</div>
+        </div>
+      </section>
+    </div></div>
+  </div>
+</div>
+
+<footer class="chrome">
+  <div class="caption" id="cap"></div>
+  <div class="dots" id="dots"></div>
+  <div class="hint">Клик по экрану · стрелки · пробел</div>
+</footer>
+
+<script>
+(function(){
+  var all = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var cap = document.getElementById('cap');
+  var dots = document.getElementById('dots');
+  var viewport = document.getElementById('viewport');
+  var scaler = document.getElementById('scaler');
+  var playBtn = document.getElementById('play');
+  var playLbl = document.getElementById('playlbl');
+  var cleanBtn = document.getElementById('clean');
+  var resetBtn = document.getElementById('reset');
+  var rClient = document.getElementById('rClient');
+  var rAdmin = document.getElementById('rAdmin');
+  var screens = [], dotEls = [], i = 0, timer = null, playing = false;
+  var DEFAULT_MS = 4200;
+
+  function buildDots(){
+    dots.textContent = '';
+    dotEls = screens.map(function(){
+      var d = document.createElement('div');
+      d.className = 'dot';
+      dots.appendChild(d);
+      return d;
+    });
+  }
+
+  function fit(){
+    var avail = window.innerHeight - (document.body.classList.contains('clean') ? 40 : 210);
+    var sc = Math.min(1, Math.max(0.34, avail / 868));
+    scaler.style.transform = 'scale(' + sc + ')';
+    scaler.style.height = (868 * sc) + 'px';
+    scaler.style.width = (414 * sc) + 'px';
+  }
+
+  function show(n){
+    i = (n + screens.length) % screens.length;
+    all.forEach(function(s){ s.classList.remove('on'); });
+    screens[i].classList.add('on');
+    dotEls.forEach(function(d, k){ d.classList.toggle('on', k === i); });
+    cap.innerHTML = screens[i].getAttribute('data-cap') || '';
+    schedule();
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    var auto = screens[i].getAttribute('data-auto');
+    if (playing) {
+      timer = setTimeout(next, auto ? +auto : DEFAULT_MS);
+    } else if (screens[i].classList.contains('load')) {
+      timer = setTimeout(next, +(auto || 2400));
+    }
+  }
+
+  function next(){ show(i + 1); }
+  function prev(){ show(i - 1); }
+
+  function stop(){
+    if (!playing) return;
+    playing = false;
+    playBtn.setAttribute('aria-pressed', 'false');
+    playLbl.textContent = 'Автопоказ';
+  }
+
+  function setRole(role){
+    stop();
+    clearTimeout(timer);
+    screens = all.filter(function(s){ return s.getAttribute('data-role') === role; });
+    rClient.setAttribute('aria-pressed', String(role === 'client'));
+    rAdmin.setAttribute('aria-pressed', String(role === 'admin'));
+    buildDots();
+    show(0);
+  }
+
+  viewport.addEventListener('click', function(){ stop(); next(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); stop(); next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); stop(); prev(); }
+  });
+
+  playBtn.addEventListener('click', function(){
+    playing = !playing;
+    playBtn.setAttribute('aria-pressed', String(playing));
+    playLbl.textContent = playing ? 'Стоп' : 'Автопоказ';
+    if (playing) { show(0); } else { clearTimeout(timer); }
+  });
+
+  cleanBtn.addEventListener('click', function(){
+    var on = document.body.classList.toggle('clean');
+    cleanBtn.setAttribute('aria-pressed', String(on));
+    fit();
+  });
+
+  resetBtn.addEventListener('click', function(){ stop(); show(0); });
+  rClient.addEventListener('click', function(){ setRole('client'); });
+  rAdmin.addEventListener('click', function(){ setRole('admin'); });
+
+  window.addEventListener('resize', fit);
+  fit();
+  setRole('client');
+})();
+</script>
+
+</body>
+</html>
