@@ -188,6 +188,55 @@ footer{width:100%;max-width:1000px;padding:0 26px 24px;display:flex;flex-directi
 .roleseg button:hover{background:#2A231E;color:var(--ink);}
 .roleseg button[aria-pressed="true"]:hover{background:var(--accent);color:#1A120C;}
 
+
+/* ---------- переполнение ---------- */
+body{overflow-x:hidden;}
+.stage{overflow:hidden;}
+
+/* ---------- мобильная панель ---------- */
+.mbar{display:none;}
+.mrestore{display:none;}
+
+@media (max-width:760px){
+  html,body{height:100%;}
+  body{overflow:hidden;}
+  header,footer{display:none;}
+
+  .mbar{
+    display:flex;align-items:center;gap:8px;width:100%;flex-shrink:0;
+    padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
+    background:var(--ground);border-bottom:1px solid var(--hair);
+  }
+  .mbar .roleseg{flex-shrink:0;}
+  .mbar .roleseg button{padding:7px 12px;font-size:12.5px;}
+  .mbar .spacer{flex-grow:1;}
+  .mbar button.ico{padding:8px;border-radius:9px;}
+  .mprog{height:2px;width:100%;background:#2A231E;flex-shrink:0;}
+  .mprog i{display:block;height:100%;background:var(--accent);transition:width .25s ease;}
+
+  body.clean .mbar,body.clean .mprog{display:none;}
+  body.clean .mrestore{
+    display:flex;position:fixed;top:calc(10px + env(safe-area-inset-top));right:10px;z-index:20;
+    width:34px;height:34px;padding:0;align-items:center;justify-content:center;
+    border-radius:17px;background:rgba(23,19,16,.55);border:1px solid rgba(255,255,255,.18);
+    color:#fff;backdrop-filter:blur(6px);
+  }
+
+  .stage{align-items:stretch;}
+  .scaler{width:100%!important;height:100%!important;transform:none!important;}
+  .phone{width:100%;height:100%;padding:0;border-radius:0;box-shadow:none;background:var(--paper);}
+  .viewport{width:100%;height:100%;border-radius:0;}
+
+  /* внутри приложения: настоящие безопасные зоны вместо нарисованных */
+  .top{padding-top:18px;}
+  .photo .backdot{top:14px;}
+  .tabbar{padding-bottom:calc(14px + env(safe-area-inset-bottom));}
+  .screen > .pad:last-child{padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+  .screen > .col:last-child{padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+  .scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .dark-screen > div:first-child{padding-top:16px;}
+}
+
 @media (prefers-reduced-motion:reduce){
   .screen{transition:none;} .spin{animation:none;} .step{animation:none;opacity:1;color:var(--aink);}
 }
@@ -213,6 +262,27 @@ footer{width:100%;max-width:1000px;padding:0 26px 24px;display:flex;flex-directi
     <button id="reset">Сначала</button>
   </div>
 </header>
+
+<div class="mbar">
+  <div class="roleseg" role="group" aria-label="Роль">
+    <button id="mRoleClient" aria-pressed="true">Клиент</button>
+    <button id="mRoleAdmin" aria-pressed="false">Админ</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="ico" id="mPlay" aria-pressed="false" aria-label="Автопоказ">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5l13 7.5-13 7.5z"/></svg>
+  </button>
+  <button class="ico" id="mReset" aria-label="Сначала">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.3 5.7"/><path d="M4 6v5h5"/></svg>
+  </button>
+  <button class="ico" id="mClean" aria-label="Чистый вид">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></svg>
+  </button>
+</div>
+<div class="mprog"><i id="mProg" style="width:12%"></i></div>
+<button class="mrestore" id="mRestore" aria-label="Показать панель">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+</button>
 
 <div class="stage">
   <div class="scaler" id="scaler">
@@ -809,18 +879,16 @@ footer{width:100%;max-width:1000px;padding:0 26px 24px;display:flex;flex-directi
 <script>
 (function(){
   var all = Array.prototype.slice.call(document.querySelectorAll('.screen'));
-  var cap = document.getElementById('cap');
-  var dots = document.getElementById('dots');
-  var viewport = document.getElementById('viewport');
-  var scaler = document.getElementById('scaler');
-  var playBtn = document.getElementById('play');
-  var playLbl = document.getElementById('playlbl');
-  var cleanBtn = document.getElementById('clean');
-  var resetBtn = document.getElementById('reset');
-  var rClient = document.getElementById('rClient');
-  var rAdmin = document.getElementById('rAdmin');
-  var screens = [], dotEls = [], i = 0, timer = null, playing = false;
+  var $ = function(id){ return document.getElementById(id); };
+  var cap = $('cap'), dots = $('dots'), viewport = $('viewport'), scaler = $('scaler');
+  var playBtn = $('play'), playLbl = $('playlbl'), cleanBtn = $('clean'), resetBtn = $('reset');
+  var rClient = $('rClient'), rAdmin = $('rAdmin');
+  var mPlay = $('mPlay'), mClean = $('mClean'), mReset = $('mReset'), mRestore = $('mRestore');
+  var mRoleClient = $('mRoleClient'), mRoleAdmin = $('mRoleAdmin'), mProg = $('mProg');
+  var screens = [], dotEls = [], i = 0, timer = null, playing = false, role = 'client';
   var DEFAULT_MS = 4200;
+
+  function isMobile(){ return window.matchMedia('(max-width: 760px)').matches; }
 
   function buildDots(){
     dots.textContent = '';
@@ -833,6 +901,12 @@ footer{width:100%;max-width:1000px;padding:0 26px 24px;display:flex;flex-directi
   }
 
   function fit(){
+    if (isMobile()) {
+      scaler.style.transform = '';
+      scaler.style.width = '';
+      scaler.style.height = '';
+      return;
+    }
     var avail = window.innerHeight - (document.body.classList.contains('clean') ? 40 : 210);
     var sc = Math.min(1, Math.max(0.34, avail / 868));
     scaler.style.transform = 'scale(' + sc + ')';
@@ -846,6 +920,9 @@ footer{width:100%;max-width:1000px;padding:0 26px 24px;display:flex;flex-directi
     screens[i].classList.add('on');
     dotEls.forEach(function(d, k){ d.classList.toggle('on', k === i); });
     cap.innerHTML = screens[i].getAttribute('data-cap') || '';
+    mProg.style.width = ((i + 1) / screens.length * 100) + '%';
+    var sc = screens[i].querySelector('.scroll');
+    if (sc) sc.scrollTop = 0;
     schedule();
   }
 
@@ -862,47 +939,64 @@ footer{width:100%;max-width:1000px;padding:0 26px 24px;display:flex;flex-directi
   function next(){ show(i + 1); }
   function prev(){ show(i - 1); }
 
-  function stop(){
-    if (!playing) return;
-    playing = false;
-    playBtn.setAttribute('aria-pressed', 'false');
-    playLbl.textContent = 'Автопоказ';
+  function setPlaying(on){
+    playing = on;
+    [playBtn, mPlay].forEach(function(b){ b.setAttribute('aria-pressed', String(on)); });
+    playLbl.textContent = on ? 'Стоп' : 'Автопоказ';
+    if (on) { show(0); } else { clearTimeout(timer); schedule(); }
   }
+  function stop(){ if (playing) setPlaying(false); }
 
-  function setRole(role){
+  function setRole(r){
+    role = r;
     stop();
     clearTimeout(timer);
-    screens = all.filter(function(s){ return s.getAttribute('data-role') === role; });
-    rClient.setAttribute('aria-pressed', String(role === 'client'));
-    rAdmin.setAttribute('aria-pressed', String(role === 'admin'));
+    screens = all.filter(function(s){ return s.getAttribute('data-role') === r; });
+    var isC = r === 'client';
+    [[rClient, isC], [rAdmin, !isC], [mRoleClient, isC], [mRoleAdmin, !isC]].forEach(function(pair){
+      pair[0].setAttribute('aria-pressed', String(pair[1]));
+    });
     buildDots();
     show(0);
   }
 
-  viewport.addEventListener('click', function(){ stop(); next(); });
+  function setClean(on){
+    document.body.classList.toggle('clean', on);
+    [cleanBtn, mClean].forEach(function(b){ b.setAttribute('aria-pressed', String(on)); });
+    fit();
+  }
+
+  // листание: клик по экрану, но не мешать прокрутке содержимого
+  var downY = 0, downT = 0;
+  viewport.addEventListener('pointerdown', function(e){ downY = e.clientY; downT = Date.now(); });
+  viewport.addEventListener('pointerup', function(e){
+    if (Math.abs(e.clientY - downY) > 12 || Date.now() - downT > 600) return;  // это была прокрутка
+    stop();
+    next();
+  });
+
   document.addEventListener('keydown', function(e){
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); stop(); next(); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); stop(); prev(); }
+    if (e.key === 'Escape') { setClean(false); }
   });
 
-  playBtn.addEventListener('click', function(){
-    playing = !playing;
-    playBtn.setAttribute('aria-pressed', String(playing));
-    playLbl.textContent = playing ? 'Стоп' : 'Автопоказ';
-    if (playing) { show(0); } else { clearTimeout(timer); }
-  });
-
-  cleanBtn.addEventListener('click', function(){
-    var on = document.body.classList.toggle('clean');
-    cleanBtn.setAttribute('aria-pressed', String(on));
-    fit();
-  });
-
+  playBtn.addEventListener('click', function(){ setPlaying(!playing); });
+  mPlay.addEventListener('click', function(){ setPlaying(!playing); });
+  cleanBtn.addEventListener('click', function(){ setClean(!document.body.classList.contains('clean')); });
+  mClean.addEventListener('click', function(){ setClean(true); });
+  mRestore.addEventListener('click', function(){ setClean(false); });
   resetBtn.addEventListener('click', function(){ stop(); show(0); });
+  mReset.addEventListener('click', function(){ stop(); show(0); });
   rClient.addEventListener('click', function(){ setRole('client'); });
   rAdmin.addEventListener('click', function(){ setRole('admin'); });
+  mRoleClient.addEventListener('click', function(){ setRole('client'); });
+  mRoleAdmin.addEventListener('click', function(){ setRole('admin'); });
 
   window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', fit);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+
   fit();
   setRole('client');
 })();
